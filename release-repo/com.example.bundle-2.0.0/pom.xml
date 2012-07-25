@@ -1,0 +1,79 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>release-repo.parent</artifactId>
+		<groupId>com.example.release-repo</groupId>
+		<version>1-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+
+	<artifactId>com.example.bundle-2.0.0</artifactId>
+	<version>1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<build>
+		<plugins>
+			<!-- Step 1. Copy existing release repository -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<!-- Perhaps we need to use the build helper to attach the p2 repo -->
+									<groupId>com.example.release-repo</groupId>
+									<artifactId>com.example.p2</artifactId>
+									<version>2.0.0</version>
+									<type>zip</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/repository</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Step 2. Mirror into master repo -->
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-p2-extras-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>mirror</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>mirror</goal>
+						</goals>
+						<configuration>
+
+							<source>
+								<!-- source repositories to mirror from -->
+								<repository>
+									<url>${project.baseUri}/target/repository</url>
+									<layout>p2</layout>
+								</repository>
+							</source>
+
+							<destination>${project.build.directory}/../../repository</destination>
+
+							<!-- whether to append to the target repository content -->
+							<append>true</append>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
